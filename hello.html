@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English ⇄ русский Translator</title>
+  <style>
+    :root {
+      --bg: #f4f4f4;
+      --text: #000;
+      --button-bg: #333;
+      --button-text: #fff;
+      --copy-bg: #4CAF50;
+      --copy-hover: #45a049;
+      --section-bg: white;
+    }
+
+    body.dark {
+      --bg: #121212;
+      --text: #e0e0e0;
+      --button-bg: #444;
+      --button-text: #fff;
+      --copy-bg: #6CBF73;
+      --copy-hover: #5aa461;
+      --section-bg: #1e1e1e;
+    }
+
+    body {
+      font-family: sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 1rem;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    h1 {
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    button {
+      font-size: 1rem;
+      padding: 0.7rem 1.4rem;
+      border: none;
+      border-radius: 10px;
+      background-color: var(--button-bg);
+      color: var(--button-text);
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #555;
+    }
+
+    .section {
+      display: none;
+      background-color: var(--section-bg);
+      padding: 1rem;
+      border-radius: 10px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    textarea {
+      width: 100%;
+      max-width: 100%;
+      height: 140px;
+      font-size: 1rem;
+      margin-top: 1rem;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+
+    body.dark textarea {
+      background-color: #2c2c2c;
+      color: #eee;
+      border: 1px solid #444;
+    }
+
+    .copy-btn {
+      margin-top: 0.8rem;
+      background-color: var(--copy-bg);
+    }
+
+    .copy-btn:hover {
+      background-color: var(--copy-hover);
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 999;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.4rem;
+      }
+
+      button {
+        font-size: 0.95rem;
+        padding: 0.6rem 1.2rem;
+      }
+
+      textarea {
+        height: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+
+  <h1>English ⇄ русский Translator</h1>
+
+  <div class="button-container">
+    <button onclick="showSection('englishToDiva')">English to русский</button>
+    <button onclick="showSection('divaToEnglish')">русский to English</button>
+  </div>
+
+  <div id="englishToDiva" class="section">
+    <h2>English to русский</h2>
+    <textarea id="englishInput" placeholder="Type English here..." oninput="translateToDiva()"></textarea>
+    <textarea id="divaOutput" placeholder="русский output will appear here..." readonly></textarea>
+    <button class="copy-btn" onclick="copyText('divaOutput')">Copy</button>
+  </div>
+
+  <div id="divaToEnglish" class="section">
+    <h2>русский to English</h2>
+    <textarea id="divaInput" placeholder="Type русский here..." oninput="translateToEnglish()"></textarea>
+    <textarea id="englishOutput" placeholder="English output will appear here..." readonly></textarea>
+    <button class="copy-btn" onclick="copyText('englishOutput')">Copy</button>
+  </div>
+
+  <script>
+    function showSection(id) {
+      document.getElementById('englishToDiva').style.display = 'none';
+      document.getElementById('divaToEnglish').style.display = 'none';
+      document.getElementById(id).style.display = 'block';
+    }
+
+    const engToDivaMap = {
+   'a': 'а', 'b': 'б', 'c': 'ч', 'd': 'д', 'e': 'е',
+  'f': 'ф', 'g': 'г', 'h': 'х', 'i': 'и', 'j': 'ш',
+  'k': 'к', 'l': 'л', 'm': 'м', 'n': 'н', 'o': 'о',
+  'p': 'п', 'q': 'я', 'r': 'р', 's': 'с', 't': 'т',
+  'u': 'у', 'v': 'в', 'w': 'ю', 'x': 'ж', 'y': 'й',
+  'z': 'з',
+
+  'A': 'А', 'B': 'Б', 'C': 'Ч', 'D': 'Д', 'E': 'Е',
+  'F': 'Ф', 'G': 'Г', 'H': 'Х', 'I': 'И', 'J': 'Ш',
+  'K': 'К', 'L': 'Л', 'M': 'М', 'N': 'Н', 'O': 'О',
+  'P': 'П', 'Q': 'Я', 'R': 'Р', 'S': 'С', 'T': 'Т',
+  'U': 'У', 'V': 'В', 'W': 'Ю', 'X': 'Ж', 'Y': 'Й',
+  'Z': 'З',
+
+  // accented vowels (lowercase)
+  'á': 'а\u0301', 'à': 'а\u0300', 'ā': 'а\u0304', 'ä': 'а\u0308', 'â': 'а\u0302',
+  'é': 'е\u0301', 'è': 'е\u0300', 'ē': 'е\u0304', 'ë': 'е\u0308', 'ê': 'е\u0302',
+  'í': 'и\u0301', 'ì': 'и\u0300', 'ī': 'и\u0304', 'ï': 'и\u0308', 'î': 'и\u0302',
+  'ó': 'о\u0301', 'ò': 'о\u0300', 'ō': 'о\u0304', 'ö': 'о\u0308', 'ô': 'о\u0302',
+  'ú': 'у\u0301', 'ù': 'у\u0300', 'ū': 'у\u0304', 'ü': 'у\u0308', 'û': 'у\u0302',
+
+  // accented vowels (uppercase)
+  'Á': 'А\u0301', 'À': 'А\u0300', 'Ā': 'А\u0304', 'Ä': 'А\u0308', 'Â': 'А\u0302',
+  'É': 'Е\u0301', 'È': 'Е\u0300', 'Ē': 'Е\u0304', 'Ë': 'Е\u0308', 'Ê': 'Е\u0302',
+  'Í': 'И\u0301', 'Ì': 'И\u0300', 'Ī': 'И\u0304', 'Ï': 'И\u0308', 'Î': 'И\u0302',
+  'Ó': 'О\u0301', 'Ò': 'О\u0300', 'Ō': 'О\u0304', 'Ö': 'О\u0308', 'Ô': 'О\u0302',
+  'Ú': 'У\u0301', 'Ù': 'У\u0300', 'Ū': 'У\u0304', 'Ü': 'У\u0308', 'Û': 'У\u0302',
+
+  // c with cedilla → Cyrillic ч + acute
+  'ç': 'ч\u0301', 'Ç': 'Ч\u0301',
+
+  // vowels and n with tilde
+  'ã': 'а\u0303', 'ẽ': 'е\u0303', 'ĩ': 'и\u0303', 'õ': 'о\u0303', 'ũ': 'у\u0303', 'ñ': 'н\u0303',
+  'Ã': 'А\u0303', 'Ẽ': 'Е\u0303', 'Ĩ': 'И\u0303', 'Õ': 'О\u0303', 'Ũ': 'У\u0303', 'Ñ': 'Н\u0303',
+  
+   // Optional extras
+  'œ': 'е\u0308',  // or 'ё' or 'ө' depending on context
+  'Œ': 'Е\u0308',
+  'ý': 'й\u0301',  // stressed й
+  'ÿ': 'й\u0308',  // diaeresis й
+  'Ý': 'Й\u0301',
+  'Ÿ': 'Й\u0308'
+};
+
+    const divaToEngMap = {};
+    for (let key in engToDivaMap) {
+      divaToEngMap[engToDivaMap[key]] = key;
+    }
+
+    function translateToDiva() {
+      const input = document.getElementById('englishInput').value;
+      let result = '';
+      for (let char of input) {
+        const lowerChar = char.toLowerCase();
+        result += engToDivaMap[lowerChar] ?? char;
+      }
+      document.getElementById('divaOutput').value = result;
+    }
+
+    function translateToEnglish() {
+      const input = document.getElementById('divaInput').value;
+      let result = '';
+      for (let char of input) {
+        result += divaToEngMap[char] ?? char;
+      }
+      document.getElementById('englishOutput').value = result;
+    }
+
+    function copyText(id) {
+      const textarea = document.getElementById(id);
+      textarea.select();
+      textarea.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      alert("Copied!");
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+    }
+  </script>
+
+</body>
+</html>
